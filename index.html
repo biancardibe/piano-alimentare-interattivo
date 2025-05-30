@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piano Alimentare Interattivo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif; /* Tailwind default is often Inter, ensuring it */
+        }
+        .modal {
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+        }
+        .modal-content {
+            transition: transform 0.25s ease;
+        }
+        .table-responsive-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+        }
+        /* Custom scrollbar for webkit browsers */
+        .table-responsive-container::-webkit-scrollbar {
+            height: 8px;
+        }
+        .table-responsive-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .table-responsive-container::-webkit-scrollbar-thumb {
+            background: #c7c7c7;
+            border-radius: 10px;
+        }
+        .table-responsive-container::-webkit-scrollbar-thumb:hover {
+            background: #a3a3a3;
+        }
+         /* Styling for table header */
+        th {
+            background-color: #f3f4f6; /* Tailwind gray-100 */
+            color: #374151; /* Tailwind gray-700 */
+            padding: 0.75rem;
+            text-align: left;
+            font-weight: 600; /* semibold */
+            border: 1px solid #e5e7eb; /* Tailwind gray-200 */
+        }
+        /* Styling for table data cells */
+        td {
+            padding: 0.75rem;
+            border: 1px solid #e5e7eb; /* Tailwind gray-200 */
+            vertical-align: top; /* Align content to the top */
+        }
+        /* Zebra striping for rows */
+        tr:nth-child(even) td {
+            background-color: #f9fafb; /* Tailwind gray-50 */
+        }
+        tr:hover td {
+            background-color: #eff6ff; /* Tailwind blue-100 for hover */
+        }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-700 antialiased">
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl sm:text-4xl font-bold text-emerald-700">Piano Alimentare Interattivo</h1>
+            <p class="mt-2 text-lg text-stone-600">Naviga tra le settimane e scopri i dettagli del tuo piano alimentare.</p>
+        </header>
+
+        <nav class="mb-8 flex flex-wrap justify-center gap-2 sm:gap-3">
+            <button id="btnWeek1" class="week-button bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition duration-150 ease-in-out">Settimana 1</button>
+            <button id="btnWeek2" class="week-button bg-stone-400 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition duration-150 ease-in-out">Settimana 2</button>
+            <button id="btnWeek3" class="week-button bg-stone-400 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition duration-150 ease-in-out">Settimana 3</button>
+            <button id="btnWeek4" class="week-button bg-stone-400 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition duration-150 ease-in-out">Settimana 4</button>
+            <button id="btnGeneralInfo" class="bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2 px-4 rounded-lg shadow transition duration-150 ease-in-out">Info Generali & Abbreviazioni</button>
+        </nav>
+
+        <div id="mealPlanContainer" class="bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+            <h2 id="weekTitle" class="text-2xl font-semibold text-emerald-700 mb-4 text-center"></h2>
+            <div class="table-responsive-container rounded-lg border border-stone-200">
+                <table id="mealTable" class="min-w-full w-full divide-y divide-stone-200">
+                    <thead class="bg-stone-100">
+                        <tr>
+                            <th class="px-3 py-3.5 text-left text-sm font-semibold text-stone-900 sticky left-0 bg-stone-100 z-10">Pasto</th>
+                            <th class="px-3 py-3.5 text-left text-sm font-semibold text-stone-900">Lunedì</th>
+                            <th class="px-3 py-3.5 text-left text-sm font-semibold text-stone-900">Martedì</th>
+                            <th class="px-3 py-3.5 text-left text-sm font-semibold text-stone-900">Mercoledì</th>
+                            <th class="px-3 py-3.5 text-left text-sm font-semibold text-stone-900">Giovedì</th>
+                            <th class="px-3 py-3.5 text-left text-sm font-semibold text-stone-900">Venerdì</th>
+                            <th class="px-3 py-3.5 text-left text-sm font-semibold text-stone-900">Sabato</th>
+                            <th class="px-3 py-3.5 text-left text-sm font-semibold text-stone-900">Domenica</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mealTableBody" class="divide-y divide-stone-200 bg-white">
+                        
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="mealDetailModal" class="modal fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 invisible opacity-0 p-4">
+        <div class="modal-content bg-white p-6 rounded-xl shadow-2xl w-full max-w-lg transform scale-95">
+            <h3 id="mealDetailTitle" class="text-xl font-semibold text-emerald-700 mb-4">Dettaglio Pasto</h3>
+            <p id="mealDetailContent" class="text-stone-600 whitespace-pre-line"></p>
+            <button id="closeMealDetailModal" class="mt-6 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition duration-150 w-full">Chiudi</button>
+        </div>
+    </div>
+
+    <div id="generalInfoModal" class="modal fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 invisible opacity-0 p-4">
+        <div class="modal-content bg-white p-6 rounded-xl shadow-2xl w-full max-w-2xl transform scale-95 overflow-y-auto max-h-[90vh]">
+            <h3 id="generalInfoTitle" class="text-2xl font-semibold text-emerald-700 mb-4"></h3>
+            <div id="generalInfoContent" class="text-stone-600 space-y-3"></div>
+            <hr class="my-6 border-stone-200">
+            <h3 class="text-xl font-semibold text-emerald-700 mb-3">Abbreviazioni Utilizzate</h3>
+            <ul id="abbreviationsList" class="list-disc list-inside text-stone-600 space-y-1"></ul>
+            <button id="closeGeneralInfoModal" class="mt-8 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition duration-150 w-full">Chiudi</button>
+        </div>
+    </div>
+
+    <script>
+        const mealPlanData = [
+            // Settimana 1
+            {
+                weekNumber: 1,
+                days: [
+                    { dayName: "Lunedì", meals: { colazione: "Latte mandorla (1 tazza); Muesli SG c.s.e. (30-40g) - Ex.1", merenda: "Frutta secca/essiccata (sacchetto monodose)", pranzo: "Pasta Kamut (70g); Pesce bianco (es. merluzzo, 100-120g Prot); Verdure cotte (150-200g Verd)", cena: "Carne bianca (pollo, 100-120g Prot); Verdure crude (150-200g Verd); Gallette riso int. (3-4) - Carb+ (1/3)" }},
+                    { dayName: "Martedì", meals: { colazione: "P.Pancakes: Albume (90ml), Farina riso (30g); Miele (q.b.) - Ex.2", merenda: "Frullato di frutta (1 bicchiere)", pranzo: "Riso int. (70g); Legumi (ceci, secchi 30-40g o vasetto 100g Prot); Verdure crude (150-200g Verd)", cena: "Uova (1 intero + 1 bianco Prot); Verdure cotte (150-200g Verd). Se fame: 3-4 noci o 1 frutto." }},
+                    { dayName: "Mercoledì", meals: { colazione: "Pane SG (30g); Arrosto tacchino (40g); Infuso frutti bosco (1 tazza) - Ex.3", merenda: "Yogurt LF (1 vasetto)", pranzo: "Pesce bianco (es. sogliola, 100-120g Prot); Verdure crude (150-200g Verd); Frutta fresca (1 Frutt) - NoCarbL (1/2)", cena: "Hamburger vegetale (100g Prot); Verdure cotte (150-200g Verd); Pane SG (30g) - Carb+ (2/3)" }},
+                    { dayName: "Giovedì", meals: { colazione: "Latte kamut (1 tazza); Fette bisc. kamut con marm. mirtilli (2-3); Noci (3-4) - Ex.4", merenda: "Centrifugato frutta/verdura (1 bicchiere)", pranzo: "Pasta SG (70g); Molluschi (gamberetti, 100g Prot); Verdure crude (150-200g Verd)", cena: "Carne bianca (tacchino, 100-120g Prot); Verdure cotte (150-200g Verd). Se fame: 3-4 noci o 1 frutto." }},
+                    { dayName: "Venerdì", meals: { colazione: "Infuso malva (1 tazza); Biscotti secchi SG (3-4); Mandorle (7-8) - Ex.5 (1/2 sett.)", merenda: "Gallette riso (2)", pranzo: "Riso basmati (70g); Formaggio fresco LF (60-80g Prot); Verdure crude (150-200g Verd)", cena: "Pesce bianco (es. orata, 100-120g Prot); Verdure cotte (150-200g Verd); Gallette quinoa (3-4) - Carb+ (3/3)" }},
+                    { dayName: "Sabato", meals: { colazione: "Yogurt greco 0% LF (1 vas.); Semi canapa (2 cucch.); Fiocchi riso/amaranto SG c.s.e. (30g) - Ex.6", merenda: "Parmigiano Reggiano (1 pezzetto occasionale)", pranzo: "Uova (1 intero + 1 bianco Prot); Verdure crude (150-200g Verd); Frutta fresca (1 Frutt) - NoCarbL (2/2)", cena: "Pasto libero" }},
+                    { dayName: "Domenica", meals: { colazione: "Gallette riso int. con marm. frutti bosco (3); Infuso malva (1 tazza) - Ex.7", merenda: "Kefir (1 bicchiere)", pranzo: "Pasta Kamut (70g); Hamburger vegetale (100g Prot); Verdure cotte (150-200g Verd)", cena: "Uova (1 intero + 1 bianco Prot); Verdure crude (150-200g Verd). Se fame: 3-4 noci o 1 frutto." }}
+                ]
+            },
+            // Settimana 2
+            {
+                weekNumber: 2,
+                days: [
+                    { dayName: "Lunedì", meals: { colazione: "Risveglio di Buddha (prot. mattino, 3-4 cucchiai); Acqua/bev. vegetale (90ml); Marmellata (mirtilli, 2 cucch.) - Ex.8", merenda: "Frutta secca/essiccata (sacchetto monodose)", pranzo: "Riso venere (70g); Pesce bianco (es. branzino, 100-120g Prot); Verdure crude (150-200g Verd)", cena: "Carne bianca (coniglio, 100-120g Prot); Verdure cotte (150-200g Verd); Gallette mais (3-4) - Carb+ (1/3)" }},
+                    { dayName: "Martedì", meals: { colazione: "Latte cocco (1 tazza); Muesli SG c.s.e. (30-40g) - Ex.1", merenda: "Frullato di frutta (1 bicchiere)", pranzo: "Pasta Sen. Cappelli (70g); Uova (1 intero + 1 bianco Prot); Verdure cotte (150-200g Verd)", cena: "Molluschi (cozze/vongole, 100g Prot); Verdure crude (150-200g Verd). Se fame: 3-4 noci o 1 frutto." }},
+                    { dayName: "Mercoledì", meals: { colazione: "P.Pancakes: Albume (90ml), Farina riso (30g); Ricotta magra (q.b.) - Ex.2", merenda: "Yogurt LF (1 vasetto)", pranzo: "Hamburger vegetale (100g Prot); Verdure cotte (150-200g Verd); Frutta fresca (1 Frutt) - NoCarbL (1/2)", cena: "Pesce bianco (es. platessa, 100-120g Prot); Verdure crude (150-200g Verd); Pane SG (30g) - Carb+ (2/3)" }},
+                    { dayName: "Giovedì", meals: { colazione: "Pane kamut (30g); Ricotta LF (40g); Infuso mela e cannella (1 tazza) - Ex.3", merenda: "Centrifugato frutta/verdura (1 bicchiere)", pranzo: "Pasta grano saraceno (70g); Carne bianca (pollo, 100-120g Prot); Verdure crude (150-200g Verd)", cena: "Uova (1 intero + 1 bianco Prot); Verdure cotte (150-200g Verd). Se fame: 3-4 noci o 1 frutto." }},
+                    { dayName: "Venerdì", meals: { colazione: "Latte farro (1 tazza); Pane farro con marm. frutti bosco (2-3 fette); Mandorle (7-8) - Ex.4", merenda: "Gallette mais (2, occasionale)", pranzo: "Riso int. (70g); Legumi (fagioli, secchi 30-40g o vasetto 100g Prot); Verdure crude (150-200g Verd)", cena: "Pesce bianco (es. nasello, 100-120g Prot); Verdure cotte (150-200g Verd); Gallette riso int. (3-4) - Carb+ (3/3)" }},
+                    { dayName: "Sabato", meals: { colazione: "Infuso melissa (1 tazza); Frollini SG (3-4); Noci (3-4) - Ex.5 (2/2 sett.)", merenda: "Kefir (1 bicchiere)", pranzo: "Formaggio fresco LF (60-80g Prot); Verdure crude (150-200g Verd); Frutta fresca (1 Frutt) - NoCarbL (2/2)", cena: "Uova (1 intero + 1 bianco Prot); Verdure crude (150-200g Verd). Se fame: 3-4 noci o 1 frutto." }},
+                    { dayName: "Domenica", meals: { colazione: "Yogurt bianco LF (1 vas.); Semi chia (2 cucch.); Fiocchi amaranto c.s.e. (30g) - Ex.6", merenda: "Frutta secca/essiccata (sacchetto monodose)", pranzo: "Pasta Sen. Cappelli (70g); Hamburger vegetale (100g Prot); Verdure cotte (150-200g Verd)", cena: "Pasto libero" }}
+                ]
+            },
+            // Settimana 3
+            {
+                weekNumber: 3,
+                days: [
+                    { dayName: "Lunedì", meals: { colazione: "Gallette riso int. con marm. mirtilli (3); Infuso frutti bosco (1 tazza) - Ex.7", merenda: "Frullato di frutta (1 bicchiere)", pranzo: "Pasta Kamut (70g); Pesce bianco (es. orata, 100-120g Prot); Verdure crude (150-200g Verd)", cena: "Carne bianca (tacchino, 100-120g Prot); Verdure cotte (150-200g Verd); Gallette quinoa (3-4) - Carb+ (1/3)" }},
+                    { dayName: "Martedì", meals: { colazione: "Risveglio di Buddha (prot. canapa, 3-4 cucchiai); Acqua/bev. vegetale (90ml); Marmellata (lamponi, 2 cucch.) - Ex.8", merenda: "Yogurt LF (1 vasetto)", pranzo: "Riso basmati (70g); Uova (1 intero + 1 bianco Prot); Verdure cotte (150-200g Verd)", cena: "Pesce bianco (es. merluzzo, 100-120g Prot); Verdure crude (150-200g Verd). Se fame: 3-4 noci o 1 frutto." }},
+                    { dayName: "Mercoledì", meals: { colazione: "Latte mandorla (1 tazza); Muesli SG c.s.e. (30-40g) - Ex.1", merenda: "Centrifugato frutta/verdura (1 bicchiere)", pranzo: "Legumi (lenticchie, secchi 30-40g o vasetto 100g Prot); Verdure cotte (150-200g Verd); Frutta fresca (1 Frutt) - NoCarbL (1/2)", cena: "Hamburger vegetale (100g Prot); Verdure crude (150-200g Verd); Pane SG (30g) - Carb+ (2/3)" }},
+                    { dayName: "Giovedì", meals: { colazione: "P.Pancakes: Albume (90ml), Farina riso (30g); Burro arachidi (velo) - Ex.2", merenda: "Gallette riso (2)", pranzo: "Pasta teff (70g); Molluschi (seppie, 100g Prot); Verdure crude (150-200g Verd)", cena: "Carne bianca (pollo, 100-120g Prot); Verdure cotte (150-200g Verd). Se fame: 3-4 noci o 1 frutto." }},
+                    { dayName: "Venerdì", meals: { colazione: "Pane mandorle (30g); Uova strapazzate (1); Infuso malva (1 tazza) - Ex.3", merenda: "Parmigiano Reggiano (1 pezzetto occasionale)", pranzo: "Riso venere (70g); Formaggio fresco LF (60-80g Prot); Verdure crude (150-200g Verd)", cena: "Pesce bianco (es. sogliola, 100-120g Prot); Verdure cotte (150-200g Verd); Gallette mais (3-4) - Carb+ (3/3)" }},
+                    { dayName: "Sabato", meals: { colazione: "Latte cocco (1 tazza); Pane cocco con marm. mirtilli (2-3 fette); Noci (3-4) - Ex.4", merenda: "Kefir (1 bicchiere)", pranzo: "Uova (1 intero + 1 bianco Prot); Verdure crude (150-200g Verd); Frutta fresca (1 Frutt) - NoCarbL (2/2)", cena: "Pasto libero" }},
+                    { dayName: "Domenica", meals: { colazione: "Infuso melissa (1 tazza); Biscotti secchi SG (3-4); Mandorle (7-8) - Ex.5 (1/2 sett.)", merenda: "Frutta secca/essiccata (sacchetto monodose)", pranzo: "Pasta Kamut (70g); Hamburger vegetale (100g Prot); Verdure cotte (150-200g Verd)", cena: "Uova (1 intero + 1 bianco Prot); Verdure crude (150-200g Verd). Se fame: 3-4 noci o 1 frutto." }}
+                ]
+            },
+            // Settimana 4
+            {
+                weekNumber: 4,
+                days: [
+                    { dayName: "Lunedì", meals: { colazione: "Yogurt greco 0% LF (1 vas.); Semi canapa (2 cucch.); Fiocchi riso c.s.e. (30g) - Ex.6", merenda: "Frullato di frutta (1 bicchiere)", pranzo: "Riso int. (70g); Pesce bianco (es. platessa, 100-120g Prot); Verdure crude (150-200g Verd)", cena: "Carne bianca (pollo, 100-120g Prot); Verdure cotte (150-200g Verd); Gallette riso int. (3-4) - Carb+ (1/3)" }},
+                    { dayName: "Martedì", meals: { colazione: "Gallette riso int. con marm. frutti bosco (3); Infuso malva (1 tazza) - Ex.7", merenda: "Yogurt LF (1 vasetto)", pranzo: "Pasta Sen. Cappelli (70g); Legumi (piselli, secchi 30-40g o vasetto 100g Prot); Verdure cotte (150-200g Verd)", cena: "Uova (1 intero + 1 bianco Prot); Verdure crude (150-200g Verd). Se fame: 3-4 noci o 1 frutto." }},
+                    { dayName: "Mercoledì", meals: { colazione: "Risveglio di Buddha (prot. mattino, 3-4 cucchiai); Bev. vegetale (riso, 90ml); Marmellata (mirtilli, 2 cucch.) - Ex.8", merenda: "Centrifugato frutta/verdura (1 bicchiere)", pranzo: "Pesce bianco (es. nasello, 100-120g Prot); Verdure cotte (150-200g Verd); Frutta fresca (1 Frutt) - NoCarbL (1/2)", cena: "Hamburger vegetale (100g Prot); Verdure crude (150-200g Verd); Pane SG (30g) - Carb+ (2/3)" }},
+                    { dayName: "Giovedì", meals: { colazione: "Latte kamut (1 tazza); Muesli SG c.s.e. (30-40g) - Ex.1", merenda: "Gallette mais (2, occasionale)", pranzo: "Pasta SG (70g); Molluschi (calamari, 100g Prot); Verdure crude (150-200g Verd)", cena: "Carne bianca (tacchino, 100-120g Prot); Verdure cotte (150-200g Verd). Se fame: 3-4 noci o 1 frutto." }},
+                    { dayName: "Venerdì", meals: { colazione: "P.Pancakes: Albume (90ml), Farina riso (30g); Banana (mezza) - Ex.2", merenda: "Frutta secca/essiccata (sacchetto monodose)", pranzo: "Riso basmati (70g); Formaggio fresco LF (60-80g Prot); Verdure crude (150-200g Verd)", cena: "Pesce bianco (es. branzino, 100-120g Prot); Verdure cotte (150-200g Verd); Gallette quinoa (3-4) - Carb+ (3/3)" }},
+                    { dayName: "Sabato", meals: { colazione: "Pane kamut (30g); Arrosto tacchino (40g); Infuso mela e cannella (1 tazza) - Ex.3", merenda: "Kefir (1 bicchiere)", pranzo: "Uova (1 intero + 1 bianco Prot); Verdure crude (150-200g Verd); Frutta fresca (1 Frutt) - NoCarbL (2/2)", cena: "Pasto libero" }},
+                    { dayName: "Domenica", meals: { colazione: "Latte farro (1 tazza); Fette bisc. kamut con marm. frutti bosco (2-3); Mandorle (7-8) - Ex.4", merenda: "Parmigiano Reggiano (1 pezzetto occasionale)", pranzo: "Pasta Sen. Cappelli (70g); Hamburger vegetale (100g Prot); Verdure cotte (150-200g Verd)", cena: "Uova (1 intero + 1 bianco Prot); Verdure crude (150-200g Verd). Se fame: 3-4 noci o 1 frutto." }}
+                ]
+            }
+        ];
+
+        const generalNotesData = {
+            title: "Note Importanti (dal documento originale)",
+            points: [
+                "<strong>Idratazione:</strong> Bere almeno 1,5-2 litri di acqua al giorno.",
+                "<strong>Condimenti:</strong> Olio extravergine d'oliva per cucinare (2 cucchiai/giorno). Per condire a crudo, preparare un mix di oli (400ml EVO, 100ml olio semi di lino, 100ml olio di mais).",
+                "<strong>Sale:</strong> Consumare con moderazione.",
+                "<strong>Verdura e Frutta:</strong> Rispettare le porzioni indicate (circa 0,7 kg totali al giorno: 3 porzioni frutta, 2 porzioni verdura da 150-200g l'una).",
+                "<strong>Carne Rossa:</strong> È possibile sostituire una porzione di carne bianca con carne rossa (vitello, manzo, agnello, cavallo – NO maiale) 2-3 volte al mese. Questa sostituzione può essere fatta a propria discrezione all'interno del piano.",
+                "<strong>Flessibilità:</strong> È possibile variare i tipi di pesce bianco, carne bianca, verdure e frutta all'interno delle categorie consentite e indicate nel piano originale.",
+                "<strong>Tisane e Infusi:</strong> Evitare il consumo di tisane e infusi eccetto quelli alla malva o alla melissa comunque da bere non più di 2-3 volte a settimana.",
+                "<strong>Zucchero e Dolci:</strong> Evitare il consumo di zucchero semplice e dolci. Sostituirli con frutta essiccata.",
+                "<strong>Masticazione:</strong> Masticare bene gli alimenti e mangiare lentamente."
+            ]
+        };
+
+        const abbreviationsData = [
+            { term: "SG", definition: "Senza Glutine" },
+            { term: "int.", definition: "Integrale" },
+            { term: "LF", definition: "Senza Lattosio" },
+            { term: "c.s.e.", definition: "con frutta secca ed essiccata" },
+            { term: "q.b.", definition: "quanto basta" },
+            { term: "Ex.", definition: "Esempio (riferito agli esempi di colazione del documento originale)" },
+            { term: "P.Pancakes", definition: "Pancake Proteici" },
+            { term: "Carb+", definition: "Fonte di carboidrati aggiunta a cena (come da piano: 3 volte/settimana)" },
+            { term: "NoCarbL", definition: "Pranzo senza fonte di carboidrati principale (come da piano: 2 volte/settimana)" },
+            { term: "Prot", definition: "Proteine" },
+            { term: "Verd", definition: "Verdure" },
+            { term: "Frutt", definition: "Frutta" }
+        ];
+
+        let currentWeek = 1;
+        const mealTableBody = document.getElementById('mealTableBody');
+        const weekTitle = document.getElementById('weekTitle');
+        const mealTypes = ['colazione', 'merenda', 'pranzo', 'cena'];
+        const mealTypeItalian = {
+            'colazione': 'Colazione',
+            'merenda': 'Merenda',
+            'pranzo': 'Pranzo',
+            'cena': 'Cena'
+        };
+
+        const mealDetailModal = document.getElementById('mealDetailModal');
+        const mealDetailTitle = document.getElementById('mealDetailTitle');
+        const mealDetailContent = document.getElementById('mealDetailContent');
+        const closeMealDetailModal = document.getElementById('closeMealDetailModal');
+
+        const generalInfoModal = document.getElementById('generalInfoModal');
+        const generalInfoTitle = document.getElementById('generalInfoTitle');
+        const generalInfoContent = document.getElementById('generalInfoContent');
+        const abbreviationsList = document.getElementById('abbreviationsList');
+        const closeGeneralInfoModal = document.getElementById('closeGeneralInfoModal');
+        const btnGeneralInfo = document.getElementById('btnGeneralInfo');
+
+
+        function renderWeek(weekNumber) {
+            currentWeek = weekNumber;
+            const weekData = mealPlanData.find(w => w.weekNumber === weekNumber);
+            if (!weekData) return;
+
+            weekTitle.textContent = `Piano Alimentare - Settimana ${weekNumber}`;
+            mealTableBody.innerHTML = ''; // Clear previous content
+
+            mealTypes.forEach(mealType => {
+                const row = document.createElement('tr');
+                row.classList.add('border-b', 'border-stone-200');
+                if (mealTypes.indexOf(mealType) % 2 !== 0 && mealTypeItalian[mealType]) { // Apply to odd rows for zebra
+                     //row.classList.add('bg-stone-50');
+                }
+
+                const mealHeaderCell = document.createElement('td');
+                mealHeaderCell.classList.add('px-3', 'py-4', 'text-sm', 'font-medium', 'text-stone-900', 'sticky', 'left-0', 'bg-white', 'z-10', 'whitespace-nowrap');
+                if (mealTypes.indexOf(mealType) % 2 !== 0 && mealTypeItalian[mealType]) { // Apply to odd rows for zebra
+                   // mealHeaderCell.classList.replace('bg-white','bg-stone-50');
+                }
+
+                mealHeaderCell.textContent = mealTypeItalian[mealType];
+                row.appendChild(mealHeaderCell);
+
+                weekData.days.forEach(day => {
+                    const cell = document.createElement('td');
+                    cell.classList.add('px-3', 'py-4', 'text-sm', 'text-stone-600', 'cursor-pointer', 'hover:bg-emerald-50', 'transition-colors');
+                    cell.textContent = day.meals[mealType] || '-';
+                    cell.dataset.mealType = mealTypeItalian[mealType];
+                    cell.dataset.dayName = day.dayName;
+                    cell.dataset.mealContent = day.meals[mealType] || 'Nessun dettaglio per questo pasto.';
+                    cell.addEventListener('click', showMealDetail);
+                    row.appendChild(cell);
+                });
+                mealTableBody.appendChild(row);
+            });
+            updateActiveButton();
+        }
+
+        function updateActiveButton() {
+            document.querySelectorAll('.week-button').forEach(button => {
+                button.classList.remove('bg-emerald-600');
+                button.classList.add('bg-stone-400');
+            });
+            const activeButton = document.getElementById(`btnWeek${currentWeek}`);
+            if (activeButton) {
+                activeButton.classList.remove('bg-stone-400');
+                activeButton.classList.add('bg-emerald-600');
+            }
+        }
+
+        function showMealDetail(event) {
+            const { mealType, dayName, mealContent } = event.target.dataset;
+            mealDetailTitle.textContent = `${mealType} - ${dayName}`;
+            mealDetailContent.textContent = mealContent;
+            mealDetailModal.classList.remove('invisible', 'opacity-0');
+            mealDetailModal.querySelector('.modal-content').classList.remove('scale-95');
+            mealDetailModal.classList.add('visible', 'opacity-100');
+            mealDetailModal.querySelector('.modal-content').classList.add('scale-100');
+
+        }
+
+        closeMealDetailModal.addEventListener('click', () => {
+            mealDetailModal.classList.add('opacity-0');
+            mealDetailModal.querySelector('.modal-content').classList.add('scale-95');
+            setTimeout(() => {
+                 mealDetailModal.classList.add('invisible');
+                 mealDetailModal.classList.remove('visible', 'opacity-100'); // ensure fully hidden
+                 mealDetailModal.querySelector('.modal-content').classList.remove('scale-100'); // ensure fully scaled down
+            }, 250);
+        });
+        
+        mealDetailModal.addEventListener('click', (event) => {
+            if (event.target === mealDetailModal) { // Click on backdrop
+                closeMealDetailModal.click();
+            }
+        });
+
+
+        function showGeneralInfo() {
+            generalInfoTitle.textContent = generalNotesData.title;
+            generalInfoContent.innerHTML = generalNotesData.points.map(point => `<p>${point}</p>`).join('');
+            
+            abbreviationsList.innerHTML = abbreviationsData.map(abbr => `<li><strong>${abbr.term}</strong>: ${abbr.definition}</li>`).join('');
+
+            generalInfoModal.classList.remove('invisible', 'opacity-0');
+            generalInfoModal.querySelector('.modal-content').classList.remove('scale-95');
+            generalInfoModal.classList.add('visible', 'opacity-100');
+            generalInfoModal.querySelector('.modal-content').classList.add('scale-100');
+        }
+
+        btnGeneralInfo.addEventListener('click', showGeneralInfo);
+        closeGeneralInfoModal.addEventListener('click', () => {
+            generalInfoModal.classList.add('opacity-0');
+            generalInfoModal.querySelector('.modal-content').classList.add('scale-95');
+             setTimeout(() => {
+                 generalInfoModal.classList.add('invisible');
+                 generalInfoModal.classList.remove('visible', 'opacity-100');
+                 generalInfoModal.querySelector('.modal-content').classList.remove('scale-100');
+            }, 250);
+        });
+
+        generalInfoModal.addEventListener('click', (event) => {
+            if (event.target === generalInfoModal) { // Click on backdrop
+                closeGeneralInfoModal.click();
+            }
+        });
+
+
+        document.getElementById('btnWeek1').addEventListener('click', () => renderWeek(1));
+        document.getElementById('btnWeek2').addEventListener('click', () => renderWeek(2));
+        document.getElementById('btnWeek3').addEventListener('click', () => renderWeek(3));
+        document.getElementById('btnWeek4').addEventListener('click', () => renderWeek(4));
+
+        // Initial render
+        renderWeek(1);
+
+    </script>
+</body>
+</html>
