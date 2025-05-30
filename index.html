@@ -204,7 +204,6 @@
         const mealDetailContentOriginal = document.getElementById('mealDetailContentOriginal');
         const closeMealDetailModal = document.getElementById('closeMealDetailModal');
 
-        const btnPreparationTips = document.getElementById('btnPreparationTips');
         const geminiResponseArea = document.getElementById('geminiResponseArea');
         const geminiLoader = document.getElementById('geminiLoader');
         const geminiResponseText = document.getElementById('geminiResponseText');
@@ -224,44 +223,7 @@
             if (dayOfWeek === 0) return 6; 
             return dayOfWeek - 1; 
         }
-        
-        async function callGeminiAPI(prompt) {
-            geminiResponseArea.classList.remove('hidden');
-            geminiLoader.classList.remove('hidden');
-            geminiResponseText.textContent = '';
-            const apiKey = ""; 
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-            let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
-            const payload = { contents: chatHistory };
-            try {
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(`Errore API: ${response.statusText} - ${errorData?.error?.message || 'Dettagli non disponibili'}`);
-                }
-                const result = await response.json();
-                if (result.candidates && result.candidates[0]?.content?.parts?.[0]?.text) {
-                    geminiResponseText.textContent = result.candidates[0].content.parts[0].text;
-                } else {
-                    geminiResponseText.textContent = "Risposta non valida dall'AI.";
-                }
-            } catch (error) {
-                geminiResponseText.textContent = `Errore: ${error.message}.`;
-            } finally {
-                geminiLoader.classList.add('hidden');
-            }
-        }
 
-        btnPreparationTips.addEventListener('click', () => {
-            if (currentMealForAI) {
-                const prompt = `Per il pasto "${currentMealForAI}", fornisci 2-3 consigli pratici e sani per la sua preparazione e presentazione. Rispondi in italiano.`;
-                callGeminiAPI(prompt);
-            }
-        });
 
         function renderDay(weekNumber, dayIndex) {
             currentWeek = weekNumber;
