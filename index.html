@@ -94,7 +94,6 @@
             <p id="mealDetailContentOriginal" class="text-sm sm:text-base text-stone-600 whitespace-pre-line"></p>
             
             <div class="mt-4 pt-4 border-t border-stone-200 space-y-3">
-                <button id="btnSuggestAlternative" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg shadow transition duration-150 text-sm sm:text-base">✨ Suggerisci Alternativa</button>
                 <button id="btnPreparationTips" class="w-full bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 px-4 rounded-lg shadow transition duration-150 text-sm sm:text-base">✨ Consigli di Preparazione</button>
             </div>
 
@@ -196,7 +195,7 @@
         ];
 
         let currentWeek = 1;
-        let currentSelectedDayIndex; // 0 for Monday, 6 for Sunday
+        let currentSelectedDayIndex; 
         let currentMealForAI = "";
 
         const dailyMealDisplayArea = document.getElementById('dailyMealDisplayArea');
@@ -209,14 +208,13 @@
         const mealDetailContentOriginal = document.getElementById('mealDetailContentOriginal');
         const closeMealDetailModal = document.getElementById('closeMealDetailModal');
 
-        const btnSuggestAlternative = document.getElementById('btnSuggestAlternative');
         const btnPreparationTips = document.getElementById('btnPreparationTips');
         const geminiResponseArea = document.getElementById('geminiResponseArea');
         const geminiLoader = document.getElementById('geminiLoader');
         const geminiResponseText = document.getElementById('geminiResponseText');
 
         const generalInfoModal = document.getElementById('generalInfoModal');
-        const generalInfoTitleElement = document.getElementById('generalInfoTitle'); // Renamed to avoid conflict
+        const generalInfoTitleElement = document.getElementById('generalInfoTitle'); 
         const generalInfoContent = document.getElementById('generalInfoContent');
         const abbreviationsList = document.getElementById('abbreviationsList');
         const closeGeneralInfoModal = document.getElementById('closeGeneralInfoModal');
@@ -226,9 +224,9 @@
 
         function getInitialDayIndex() {
             const today = new Date();
-            const dayOfWeek = today.getDay(); // 0 (Sunday) to 6 (Saturday)
-            if (dayOfWeek === 0) return 6; // Sunday maps to index 6
-            return dayOfWeek - 1; // Monday (1) maps to 0, ..., Saturday (6) maps to 5
+            const dayOfWeek = today.getDay(); 
+            if (dayOfWeek === 0) return 6; 
+            return dayOfWeek - 1; 
         }
         
         async function callGeminiAPI(prompt) {
@@ -261,13 +259,6 @@
                 geminiLoader.classList.add('hidden');
             }
         }
-
-        btnSuggestAlternative.addEventListener('click', () => {
-            if (currentMealForAI) {
-                const prompt = `Dato il pasto "${currentMealForAI}", suggerisci un pasto alternativo sano e bilanciato, adatto a un piano alimentare. Fornisci una breve descrizione (massimo 2-3 frasi). Rispondi in italiano.`;
-                callGeminiAPI(prompt);
-            }
-        });
 
         btnPreparationTips.addEventListener('click', () => {
             if (currentMealForAI) {
@@ -347,12 +338,11 @@
 
 
         function showMealDetail(event) {
-            // Traverse up if the click was on a child element of meal-card
             let targetElement = event.target;
             while (targetElement && !targetElement.classList.contains('meal-card')) {
                 targetElement = targetElement.parentElement;
             }
-            if (!targetElement) return; // Should not happen if event listener is on meal-card
+            if (!targetElement) return; 
 
             const { mealType, dayName, mealContent } = targetElement.dataset;
             currentMealForAI = mealContent; 
@@ -415,7 +405,6 @@
         document.getElementById('btnWeek3').addEventListener('click', () => renderDay(3, getInitialDayIndex()));
         document.getElementById('btnWeek4').addEventListener('click', () => renderDay(4, getInitialDayIndex()));
 
-        // Initial render: Week 1, current day of the week
         renderDay(1, getInitialDayIndex()); 
     </script>
 </body>
