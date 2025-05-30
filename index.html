@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Piano Alimentare Interattivo</title>
+    <title>Piano Alimentare Interattivo - Oggi</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
-            font-family: 'Inter', sans-serif; /* Tailwind default is often Inter, ensuring it */
+            font-family: 'Inter', sans-serif; 
         }
         .modal {
             transition: opacity 0.25s ease, visibility 0.25s ease;
@@ -17,11 +17,11 @@
         }
         .table-responsive-container {
             overflow-x: auto;
-            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+            -webkit-overflow-scrolling: touch; 
+            scroll-behavior: smooth; /* Added for smoother auto-scroll */
         }
-        /* Custom scrollbar for webkit browsers */
         .table-responsive-container::-webkit-scrollbar {
-            height: 8px;
+            height: 6px;
         }
         .table-responsive-container::-webkit-scrollbar-track {
             background: #f1f1f1;
@@ -34,86 +34,124 @@
         .table-responsive-container::-webkit-scrollbar-thumb:hover {
             background: #a3a3a3;
         }
-         /* Styling for table header */
-        th {
-            background-color: #f3f4f6; /* Tailwind gray-100 */
-            color: #374151; /* Tailwind gray-700 */
-            padding: 0.75rem;
+        #mealTable th {
+            /* background-color set by JS for current day or default */
+            color: #374151; 
             text-align: left;
-            font-weight: 600; /* semibold */
-            border: 1px solid #e5e7eb; /* Tailwind gray-200 */
+            font-weight: 600; 
+            border: 1px solid #e5e7eb; 
         }
-        /* Styling for table data cells */
-        td {
+        #mealTable td {
+            border: 1px solid #e5e7eb; 
+            vertical-align: top; 
+        }
+        /* Default row backgrounds, highlight will override */
+        #mealTable tbody tr:nth-child(even) td {
+            background-color: #f9fafb; /* gray-50 */
+        }
+         #mealTable tbody tr:nth-child(odd) td {
+            background-color: #ffffff; /* white */
+        }
+        /* Hover should be distinct from highlight and zebra */
+        #mealTable tbody tr:hover td { 
+            background-color: #dbeafe !important; /* blue-200, ensure it overrides */
+        }
+        .current-day-header {
+            background-color: #d1fae5 !important; /* emerald-200, ensure it overrides default header bg */
+            color: #065f46 !important; /* emerald-800 */
+        }
+        .current-day-cell {
+            background-color: #e6fffa !important; /* lighter emerald variant or similar, e.g. teal-50 */
+             /* ensure it overrides zebra striping */
+        }
+        .gemini-response-container {
+            margin-top: 1rem;
             padding: 0.75rem;
-            border: 1px solid #e5e7eb; /* Tailwind gray-200 */
-            vertical-align: top; /* Align content to the top */
+            background-color: #f9fafb;
+            border-radius: 0.5rem; 
+            border: 1px solid #e5e7eb; 
+            min-height: 50px;
         }
-        /* Zebra striping for rows */
-        tr:nth-child(even) td {
-            background-color: #f9fafb; /* Tailwind gray-50 */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db; 
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
         }
-        tr:hover td {
-            background-color: #eff6ff; /* Tailwind blue-100 for hover */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body class="bg-stone-50 text-stone-700 antialiased">
 
-    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
-        <header class="mb-8 text-center">
-            <h1 class="text-3xl sm:text-4xl font-bold text-emerald-700">Piano Alimentare Interattivo</h1>
-            <p class="mt-2 text-lg text-stone-600">Naviga tra le settimane e scopri i dettagli del tuo piano alimentare.</p>
+    <div class="container mx-auto p-3 sm:p-4 lg:p-8">
+        <header class="mb-6 sm:mb-8 text-center">
+            <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-emerald-700">Piano Alimentare Interattivo</h1>
+            <p class="mt-2 text-sm sm:text-base lg:text-lg text-stone-600">Il tuo piano settimanale, con focus sul giorno corrente.</p>
         </header>
 
-        <nav class="mb-8 flex flex-wrap justify-center gap-2 sm:gap-3">
-            <button id="btnWeek1" class="week-button bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition duration-150 ease-in-out">Settimana 1</button>
-            <button id="btnWeek2" class="week-button bg-stone-400 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition duration-150 ease-in-out">Settimana 2</button>
-            <button id="btnWeek3" class="week-button bg-stone-400 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition duration-150 ease-in-out">Settimana 3</button>
-            <button id="btnWeek4" class="week-button bg-stone-400 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition duration-150 ease-in-out">Settimana 4</button>
-            <button id="btnGeneralInfo" class="bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2 px-4 rounded-lg shadow transition duration-150 ease-in-out">Info Generali & Abbreviazioni</button>
+        <nav class="mb-6 sm:mb-8 flex flex-wrap justify-center gap-2 sm:gap-3">
+            <button id="btnWeek1" class="week-button bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-3 sm:px-4 text-sm sm:text-base rounded-lg shadow transition duration-150 ease-in-out">Sett. 1</button>
+            <button id="btnWeek2" class="week-button bg-stone-400 hover:bg-emerald-700 text-white font-semibold py-2 px-3 sm:px-4 text-sm sm:text-base rounded-lg shadow transition duration-150 ease-in-out">Sett. 2</button>
+            <button id="btnWeek3" class="week-button bg-stone-400 hover:bg-emerald-700 text-white font-semibold py-2 px-3 sm:px-4 text-sm sm:text-base rounded-lg shadow transition duration-150 ease-in-out">Sett. 3</button>
+            <button id="btnWeek4" class="week-button bg-stone-400 hover:bg-emerald-700 text-white font-semibold py-2 px-3 sm:px-4 text-sm sm:text-base rounded-lg shadow transition duration-150 ease-in-out">Sett. 4</button>
+            <button id="btnGeneralInfo" class="bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2 px-3 sm:px-4 text-sm sm:text-base rounded-lg shadow transition duration-150 ease-in-out whitespace-nowrap">Info & Note</button>
         </nav>
 
-        <div id="mealPlanContainer" class="bg-white p-4 sm:p-6 rounded-xl shadow-lg">
-            <h2 id="weekTitle" class="text-2xl font-semibold text-emerald-700 mb-4 text-center"></h2>
-            <div class="table-responsive-container rounded-lg border border-stone-200">
+        <div id="mealPlanContainer" class="bg-white p-3 sm:p-4 lg:p-6 rounded-xl shadow-lg">
+            <h2 id="weekTitle" class="text-xl sm:text-2xl font-semibold text-emerald-700 mb-3 sm:mb-4 text-center"></h2>
+            <div id="tableResponsiveContainer" class="table-responsive-container rounded-lg border border-stone-200">
                 <table id="mealTable" class="min-w-full w-full divide-y divide-stone-200">
-                    <thead class="bg-stone-100">
+                    <thead >
                         <tr>
-                            <th class="px-3 py-3.5 text-left text-sm font-semibold text-stone-900 sticky left-0 bg-stone-100 z-10">Pasto</th>
-                            <th class="px-3 py-3.5 text-left text-sm font-semibold text-stone-900">Lunedì</th>
-                            <th class="px-3 py-3.5 text-left text-sm font-semibold text-stone-900">Martedì</th>
-                            <th class="px-3 py-3.5 text-left text-sm font-semibold text-stone-900">Mercoledì</th>
-                            <th class="px-3 py-3.5 text-left text-sm font-semibold text-stone-900">Giovedì</th>
-                            <th class="px-3 py-3.5 text-left text-sm font-semibold text-stone-900">Venerdì</th>
-                            <th class="px-3 py-3.5 text-left text-sm font-semibold text-stone-900">Sabato</th>
-                            <th class="px-3 py-3.5 text-left text-sm font-semibold text-stone-900">Domenica</th>
+                            <th id="stickyPastoHeader" class="px-2 py-2.5 text-xs sm:px-3 sm:py-3.5 sm:text-sm font-semibold text-stone-900 sticky left-0 z-20 bg-stone-100">Pasto</th>
+                            <th data-day-col="0" class="px-2 py-2.5 text-xs sm:px-3 sm:py-3.5 sm:text-sm font-semibold text-stone-900 bg-stone-100">Lunedì</th>
+                            <th data-day-col="1" class="px-2 py-2.5 text-xs sm:px-3 sm:py-3.5 sm:text-sm font-semibold text-stone-900 bg-stone-100">Martedì</th>
+                            <th data-day-col="2" class="px-2 py-2.5 text-xs sm:px-3 sm:py-3.5 sm:text-sm font-semibold text-stone-900 bg-stone-100">Mercoledì</th>
+                            <th data-day-col="3" class="px-2 py-2.5 text-xs sm:px-3 sm:py-3.5 sm:text-sm font-semibold text-stone-900 bg-stone-100">Giovedì</th>
+                            <th data-day-col="4" class="px-2 py-2.5 text-xs sm:px-3 sm:py-3.5 sm:text-sm font-semibold text-stone-900 bg-stone-100">Venerdì</th>
+                            <th data-day-col="5" class="px-2 py-2.5 text-xs sm:px-3 sm:py-3.5 sm:text-sm font-semibold text-stone-900 bg-stone-100">Sabato</th>
+                            <th data-day-col="6" class="px-2 py-2.5 text-xs sm:px-3 sm:py-3.5 sm:text-sm font-semibold text-stone-900 bg-stone-100">Domenica</th>
                         </tr>
                     </thead>
-                    <tbody id="mealTableBody" class="divide-y divide-stone-200 bg-white">
-                        
-                    </tbody>
+                    <tbody id="mealTableBody" class="divide-y divide-stone-200"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
     <div id="mealDetailModal" class="modal fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 invisible opacity-0 p-4">
-        <div class="modal-content bg-white p-6 rounded-xl shadow-2xl w-full max-w-lg transform scale-95">
-            <h3 id="mealDetailTitle" class="text-xl font-semibold text-emerald-700 mb-4">Dettaglio Pasto</h3>
-            <p id="mealDetailContent" class="text-stone-600 whitespace-pre-line"></p>
-            <button id="closeMealDetailModal" class="mt-6 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition duration-150 w-full">Chiudi</button>
+        <div class="modal-content bg-white p-5 sm:p-6 rounded-xl shadow-2xl w-full max-w-md transform scale-95 overflow-y-auto max-h-[90vh]">
+            <h3 id="mealDetailTitle" class="text-lg sm:text-xl font-semibold text-emerald-700 mb-3 sm:mb-4">Dettaglio Pasto</h3>
+            <p id="mealDetailContentOriginal" class="text-sm sm:text-base text-stone-600 whitespace-pre-line"></p>
+            
+            <div class="mt-4 pt-4 border-t border-stone-200 space-y-3">
+                <button id="btnSuggestAlternative" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg shadow transition duration-150 text-sm sm:text-base">✨ Suggerisci Alternativa</button>
+                <button id="btnPreparationTips" class="w-full bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 px-4 rounded-lg shadow transition duration-150 text-sm sm:text-base">✨ Consigli di Preparazione</button>
+            </div>
+
+            <div id="geminiResponseArea" class="gemini-response-container text-sm sm:text-base text-stone-600 whitespace-pre-line hidden">
+                <div id="geminiLoader" class="loader hidden"></div>
+                <p id="geminiResponseText"></p>
+            </div>
+
+            <button id="closeMealDetailModal" class="mt-5 sm:mt-6 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition duration-150 w-full text-sm sm:text-base">Chiudi</button>
         </div>
     </div>
 
     <div id="generalInfoModal" class="modal fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 invisible opacity-0 p-4">
-        <div class="modal-content bg-white p-6 rounded-xl shadow-2xl w-full max-w-2xl transform scale-95 overflow-y-auto max-h-[90vh]">
-            <h3 id="generalInfoTitle" class="text-2xl font-semibold text-emerald-700 mb-4"></h3>
-            <div id="generalInfoContent" class="text-stone-600 space-y-3"></div>
-            <hr class="my-6 border-stone-200">
-            <h3 class="text-xl font-semibold text-emerald-700 mb-3">Abbreviazioni Utilizzate</h3>
-            <ul id="abbreviationsList" class="list-disc list-inside text-stone-600 space-y-1"></ul>
-            <button id="closeGeneralInfoModal" class="mt-8 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition duration-150 w-full">Chiudi</button>
+        <div class="modal-content bg-white p-5 sm:p-6 rounded-xl shadow-2xl w-full max-w-lg transform scale-95 overflow-y-auto max-h-[90vh]">
+            <h3 id="generalInfoTitle" class="text-xl sm:text-2xl font-semibold text-emerald-700 mb-3 sm:mb-4"></h3>
+            <div id="generalInfoContent" class="text-sm sm:text-base text-stone-600 space-y-2 sm:space-y-3"></div>
+            <hr class="my-4 sm:my-6 border-stone-200">
+            <h3 class="text-lg sm:text-xl font-semibold text-emerald-700 mb-2 sm:mb-3">Abbreviazioni</h3>
+            <ul id="abbreviationsList" class="list-disc list-inside text-sm sm:text-base text-stone-600 space-y-1"></ul>
+            <button id="closeGeneralInfoModal" class="mt-6 sm:mt-8 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition duration-150 w-full text-sm sm:text-base">Chiudi</button>
         </div>
     </div>
 
@@ -132,7 +170,6 @@
                     { dayName: "Domenica", meals: { colazione: "Gallette riso int. con marm. frutti bosco (3); Infuso malva (1 tazza) - Ex.7", merenda: "Kefir (1 bicchiere)", pranzo: "Pasta Kamut (70g); Hamburger vegetale (100g Prot); Verdure cotte (150-200g Verd)", cena: "Uova (1 intero + 1 bianco Prot); Verdure crude (150-200g Verd). Se fame: 3-4 noci o 1 frutto." }}
                 ]
             },
-            // Settimana 2
             {
                 weekNumber: 2,
                 days: [
@@ -145,7 +182,6 @@
                     { dayName: "Domenica", meals: { colazione: "Yogurt bianco LF (1 vas.); Semi chia (2 cucch.); Fiocchi amaranto c.s.e. (30g) - Ex.6", merenda: "Frutta secca/essiccata (sacchetto monodose)", pranzo: "Pasta Sen. Cappelli (70g); Hamburger vegetale (100g Prot); Verdure cotte (150-200g Verd)", cena: "Pasto libero" }}
                 ]
             },
-            // Settimana 3
             {
                 weekNumber: 3,
                 days: [
@@ -158,7 +194,6 @@
                     { dayName: "Domenica", meals: { colazione: "Infuso melissa (1 tazza); Biscotti secchi SG (3-4); Mandorle (7-8) - Ex.5 (1/2 sett.)", merenda: "Frutta secca/essiccata (sacchetto monodose)", pranzo: "Pasta Kamut (70g); Hamburger vegetale (100g Prot); Verdure cotte (150-200g Verd)", cena: "Uova (1 intero + 1 bianco Prot); Verdure crude (150-200g Verd). Se fame: 3-4 noci o 1 frutto." }}
                 ]
             },
-            // Settimana 4
             {
                 weekNumber: 4,
                 days: [
@@ -174,7 +209,7 @@
         ];
 
         const generalNotesData = {
-            title: "Note Importanti (dal documento originale)",
+            title: "Note Importanti",
             points: [
                 "<strong>Idratazione:</strong> Bere almeno 1,5-2 litri di acqua al giorno.",
                 "<strong>Condimenti:</strong> Olio extravergine d'oliva per cucinare (2 cucchiai/giorno). Per condire a crudo, preparare un mix di oli (400ml EVO, 100ml olio semi di lino, 100ml olio di mais).",
@@ -189,35 +224,32 @@
         };
 
         const abbreviationsData = [
-            { term: "SG", definition: "Senza Glutine" },
-            { term: "int.", definition: "Integrale" },
-            { term: "LF", definition: "Senza Lattosio" },
-            { term: "c.s.e.", definition: "con frutta secca ed essiccata" },
-            { term: "q.b.", definition: "quanto basta" },
-            { term: "Ex.", definition: "Esempio (riferito agli esempi di colazione del documento originale)" },
-            { term: "P.Pancakes", definition: "Pancake Proteici" },
-            { term: "Carb+", definition: "Fonte di carboidrati aggiunta a cena (come da piano: 3 volte/settimana)" },
-            { term: "NoCarbL", definition: "Pranzo senza fonte di carboidrati principale (come da piano: 2 volte/settimana)" },
-            { term: "Prot", definition: "Proteine" },
-            { term: "Verd", definition: "Verdure" },
-            { term: "Frutt", definition: "Frutta" }
+            { term: "SG", definition: "Senza Glutine" }, { term: "int.", definition: "Integrale" },
+            { term: "LF", definition: "Senza Lattosio" }, { term: "c.s.e.", definition: "con frutta secca ed essiccata" },
+            { term: "q.b.", definition: "quanto basta" }, { term: "Ex.", definition: "Esempio (colazione)" },
+            { term: "P.Pancakes", definition: "Pancake Proteici" }, { term: "Carb+", definition: "Carboidrati aggiunti a cena" },
+            { term: "NoCarbL", definition: "Pranzo senza carboidrati principali" }, { term: "Prot", definition: "Proteine" },
+            { term: "Verd", definition: "Verdure" }, { term: "Frutt", definition: "Frutta" }
         ];
 
         let currentWeek = 1;
+        let currentMealForAI = "";
         const mealTableBody = document.getElementById('mealTableBody');
         const weekTitle = document.getElementById('weekTitle');
+        const tableResponsiveContainer = document.getElementById('tableResponsiveContainer');
         const mealTypes = ['colazione', 'merenda', 'pranzo', 'cena'];
-        const mealTypeItalian = {
-            'colazione': 'Colazione',
-            'merenda': 'Merenda',
-            'pranzo': 'Pranzo',
-            'cena': 'Cena'
-        };
+        const mealTypeItalian = { 'colazione': 'Colazione', 'merenda': 'Merenda', 'pranzo': 'Pranzo', 'cena': 'Cena' };
 
         const mealDetailModal = document.getElementById('mealDetailModal');
         const mealDetailTitle = document.getElementById('mealDetailTitle');
-        const mealDetailContent = document.getElementById('mealDetailContent');
+        const mealDetailContentOriginal = document.getElementById('mealDetailContentOriginal');
         const closeMealDetailModal = document.getElementById('closeMealDetailModal');
+
+        const btnSuggestAlternative = document.getElementById('btnSuggestAlternative');
+        const btnPreparationTips = document.getElementById('btnPreparationTips');
+        const geminiResponseArea = document.getElementById('geminiResponseArea');
+        const geminiLoader = document.getElementById('geminiLoader');
+        const geminiResponseText = document.getElementById('geminiResponseText');
 
         const generalInfoModal = document.getElementById('generalInfoModal');
         const generalInfoTitle = document.getElementById('generalInfoTitle');
@@ -226,6 +258,90 @@
         const closeGeneralInfoModal = document.getElementById('closeGeneralInfoModal');
         const btnGeneralInfo = document.getElementById('btnGeneralInfo');
 
+        function getCurrentDayTableIndex() {
+            const today = new Date();
+            const dayOfWeek = today.getDay(); // 0 (Sunday) to 6 (Saturday)
+            // Our table columns data-day-col are 0 (Lunedì) to 6 (Domenica)
+            if (dayOfWeek === 0) return 6; // Sunday
+            return dayOfWeek - 1; // Monday (1) becomes 0, Tuesday (2) becomes 1, etc.
+        }
+        
+        async function callGeminiAPI(prompt) {
+            geminiResponseArea.classList.remove('hidden');
+            geminiLoader.classList.remove('hidden');
+            geminiResponseText.textContent = '';
+            const apiKey = ""; 
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+            const payload = { contents: chatHistory };
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`Errore API: ${response.statusText} - ${errorData?.error?.message || 'Dettagli non disponibili'}`);
+                }
+                const result = await response.json();
+                if (result.candidates && result.candidates[0]?.content?.parts?.[0]?.text) {
+                    geminiResponseText.textContent = result.candidates[0].content.parts[0].text;
+                } else {
+                    geminiResponseText.textContent = "Risposta non valida dall'AI.";
+                }
+            } catch (error) {
+                geminiResponseText.textContent = `Errore: ${error.message}.`;
+            } finally {
+                geminiLoader.classList.add('hidden');
+            }
+        }
+
+        btnSuggestAlternative.addEventListener('click', () => {
+            if (currentMealForAI) {
+                const prompt = `Dato il pasto "${currentMealForAI}", suggerisci un pasto alternativo sano e bilanciato, adatto a un piano alimentare. Fornisci una breve descrizione (massimo 2-3 frasi). Rispondi in italiano.`;
+                callGeminiAPI(prompt);
+            }
+        });
+
+        btnPreparationTips.addEventListener('click', () => {
+            if (currentMealForAI) {
+                const prompt = `Per il pasto "${currentMealForAI}", fornisci 2-3 consigli pratici e sani per la sua preparazione e presentazione. Rispondi in italiano.`;
+                callGeminiAPI(prompt);
+            }
+        });
+
+        function highlightCurrentDayColumn(currentDayIndex) {
+            const tableHeaders = document.querySelectorAll('#mealTable thead th[data-day-col]');
+            tableHeaders.forEach(th => {
+                th.classList.remove('current-day-header', 'font-bold');
+                th.style.backgroundColor = '#f3f4f6'; // Default bg-stone-100
+                if (parseInt(th.dataset.dayCol) === currentDayIndex) {
+                    th.classList.add('current-day-header', 'font-bold');
+                }
+            });
+        }
+        
+        function scrollToCurrentDayColumn(currentDayIndex) {
+            const stickyPastoHeader = document.getElementById('stickyPastoHeader');
+            const firstPastoCellWidth = stickyPastoHeader ? stickyPastoHeader.offsetWidth : 0;
+            
+            const dayHeaders = document.querySelectorAll('#mealTable thead th[data-day-col]');
+            let scrollPosition = 0;
+            if (dayHeaders[currentDayIndex]) {
+                 // We want the current day column to appear after the sticky "Pasto" column
+                 // So, we sum widths of all preceding day columns
+                for(let i = 0; i < currentDayIndex; i++) {
+                    if(dayHeaders[i]) {
+                        scrollPosition += dayHeaders[i].offsetWidth;
+                    }
+                }
+            }
+             // Small timeout to allow DOM to fully render, especially after week change
+            setTimeout(() => {
+                tableResponsiveContainer.scrollLeft = scrollPosition;
+            }, 50);
+        }
 
         function renderWeek(weekNumber) {
             currentWeek = weekNumber;
@@ -233,27 +349,32 @@
             if (!weekData) return;
 
             weekTitle.textContent = `Piano Alimentare - Settimana ${weekNumber}`;
-            mealTableBody.innerHTML = ''; // Clear previous content
+            mealTableBody.innerHTML = ''; 
+            
+            const currentDayIndex = getCurrentDayTableIndex();
+            highlightCurrentDayColumn(currentDayIndex);
 
-            mealTypes.forEach(mealType => {
+            mealTypes.forEach((mealType, mealIndex) => {
                 const row = document.createElement('tr');
-                row.classList.add('border-b', 'border-stone-200');
-                if (mealTypes.indexOf(mealType) % 2 !== 0 && mealTypeItalian[mealType]) { // Apply to odd rows for zebra
-                     //row.classList.add('bg-stone-50');
-                }
-
+                
                 const mealHeaderCell = document.createElement('td');
-                mealHeaderCell.classList.add('px-3', 'py-4', 'text-sm', 'font-medium', 'text-stone-900', 'sticky', 'left-0', 'bg-white', 'z-10', 'whitespace-nowrap');
-                if (mealTypes.indexOf(mealType) % 2 !== 0 && mealTypeItalian[mealType]) { // Apply to odd rows for zebra
-                   // mealHeaderCell.classList.replace('bg-white','bg-stone-50');
+                mealHeaderCell.classList.add('px-2', 'py-3', 'text-xs', 'sm:px-3', 'sm:py-4', 'sm:text-sm', 'font-medium', 'text-stone-800', 'sticky', 'left-0', 'z-10', 'whitespace-nowrap');
+                // Explicit background for sticky column to ensure it overrides general td styling from CSS if needed
+                // and to maintain zebra striping consistency.
+                if (mealIndex % 2 === 0) { 
+                    mealHeaderCell.style.backgroundColor = '#ffffff'; 
+                } else { 
+                    mealHeaderCell.style.backgroundColor = '#f9fafb'; 
                 }
-
                 mealHeaderCell.textContent = mealTypeItalian[mealType];
                 row.appendChild(mealHeaderCell);
 
-                weekData.days.forEach(day => {
+                weekData.days.forEach((day, dayIdxInTable) => {
                     const cell = document.createElement('td');
-                    cell.classList.add('px-3', 'py-4', 'text-sm', 'text-stone-600', 'cursor-pointer', 'hover:bg-emerald-50', 'transition-colors');
+                    cell.classList.add('px-2', 'py-3', 'text-xs', 'sm:px-3', 'sm:py-4', 'sm:text-sm', 'text-stone-600', 'cursor-pointer', 'transition-colors');
+                    if (dayIdxInTable === currentDayIndex) {
+                        cell.classList.add('current-day-cell');
+                    }
                     cell.textContent = day.meals[mealType] || '-';
                     cell.dataset.mealType = mealTypeItalian[mealType];
                     cell.dataset.dayName = day.dayName;
@@ -264,6 +385,7 @@
                 mealTableBody.appendChild(row);
             });
             updateActiveButton();
+            scrollToCurrentDayColumn(currentDayIndex);
         }
 
         function updateActiveButton() {
@@ -280,13 +402,16 @@
 
         function showMealDetail(event) {
             const { mealType, dayName, mealContent } = event.target.dataset;
+            currentMealForAI = mealContent; 
             mealDetailTitle.textContent = `${mealType} - ${dayName}`;
-            mealDetailContent.textContent = mealContent;
+            mealDetailContentOriginal.textContent = mealContent;
+            geminiResponseArea.classList.add('hidden'); 
+            geminiResponseText.textContent = ''; 
+            geminiLoader.classList.add('hidden');
             mealDetailModal.classList.remove('invisible', 'opacity-0');
             mealDetailModal.querySelector('.modal-content').classList.remove('scale-95');
             mealDetailModal.classList.add('visible', 'opacity-100');
             mealDetailModal.querySelector('.modal-content').classList.add('scale-100');
-
         }
 
         closeMealDetailModal.addEventListener('click', () => {
@@ -294,24 +419,21 @@
             mealDetailModal.querySelector('.modal-content').classList.add('scale-95');
             setTimeout(() => {
                  mealDetailModal.classList.add('invisible');
-                 mealDetailModal.classList.remove('visible', 'opacity-100'); // ensure fully hidden
-                 mealDetailModal.querySelector('.modal-content').classList.remove('scale-100'); // ensure fully scaled down
+                 mealDetailModal.classList.remove('visible', 'opacity-100'); 
+                 mealDetailModal.querySelector('.modal-content').classList.remove('scale-100');
             }, 250);
         });
         
         mealDetailModal.addEventListener('click', (event) => {
-            if (event.target === mealDetailModal) { // Click on backdrop
+            if (event.target === mealDetailModal) { 
                 closeMealDetailModal.click();
             }
         });
 
-
         function showGeneralInfo() {
             generalInfoTitle.textContent = generalNotesData.title;
             generalInfoContent.innerHTML = generalNotesData.points.map(point => `<p>${point}</p>`).join('');
-            
             abbreviationsList.innerHTML = abbreviationsData.map(abbr => `<li><strong>${abbr.term}</strong>: ${abbr.definition}</li>`).join('');
-
             generalInfoModal.classList.remove('invisible', 'opacity-0');
             generalInfoModal.querySelector('.modal-content').classList.remove('scale-95');
             generalInfoModal.classList.add('visible', 'opacity-100');
@@ -330,20 +452,17 @@
         });
 
         generalInfoModal.addEventListener('click', (event) => {
-            if (event.target === generalInfoModal) { // Click on backdrop
+            if (event.target === generalInfoModal) { 
                 closeGeneralInfoModal.click();
             }
         });
-
 
         document.getElementById('btnWeek1').addEventListener('click', () => renderWeek(1));
         document.getElementById('btnWeek2').addEventListener('click', () => renderWeek(2));
         document.getElementById('btnWeek3').addEventListener('click', () => renderWeek(3));
         document.getElementById('btnWeek4').addEventListener('click', () => renderWeek(4));
 
-        // Initial render
-        renderWeek(1);
-
+        renderWeek(1); // Initial render
     </script>
 </body>
 </html>
