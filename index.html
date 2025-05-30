@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Piano Alimentare Interattivo - Oggi</title>
+    <title>Piano Alimentare - Oggi</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -14,55 +14,6 @@
         }
         .modal-content {
             transition: transform 0.25s ease;
-        }
-        .table-responsive-container {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch; 
-            scroll-behavior: smooth; /* Added for smoother auto-scroll */
-        }
-        .table-responsive-container::-webkit-scrollbar {
-            height: 6px;
-        }
-        .table-responsive-container::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-        .table-responsive-container::-webkit-scrollbar-thumb {
-            background: #c7c7c7;
-            border-radius: 10px;
-        }
-        .table-responsive-container::-webkit-scrollbar-thumb:hover {
-            background: #a3a3a3;
-        }
-        #mealTable th {
-            /* background-color set by JS for current day or default */
-            color: #374151; 
-            text-align: left;
-            font-weight: 600; 
-            border: 1px solid #e5e7eb; 
-        }
-        #mealTable td {
-            border: 1px solid #e5e7eb; 
-            vertical-align: top; 
-        }
-        /* Default row backgrounds, highlight will override */
-        #mealTable tbody tr:nth-child(even) td {
-            background-color: #f9fafb; /* gray-50 */
-        }
-         #mealTable tbody tr:nth-child(odd) td {
-            background-color: #ffffff; /* white */
-        }
-        /* Hover should be distinct from highlight and zebra */
-        #mealTable tbody tr:hover td { 
-            background-color: #dbeafe !important; /* blue-200, ensure it overrides */
-        }
-        .current-day-header {
-            background-color: #d1fae5 !important; /* emerald-200, ensure it overrides default header bg */
-            color: #065f46 !important; /* emerald-800 */
-        }
-        .current-day-cell {
-            background-color: #e6fffa !important; /* lighter emerald variant or similar, e.g. teal-50 */
-             /* ensure it overrides zebra striping */
         }
         .gemini-response-container {
             margin-top: 1rem;
@@ -85,44 +36,56 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        /* Full width on mobile, constrained on larger screens */
+        .main-container {
+            width: 100%;
+            min-height: 100vh; /* Ensure it takes at least full viewport height */
+        }
+        @media (min-width: 1024px) { /* lg breakpoint */
+            .main-container {
+                max-width: 896px; /* approx max-w-4xl */
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+        .meal-card {
+            background-color: white;
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); /* shadow-lg */
+            margin-bottom: 1rem; /* mb-4 */
+            padding: 1rem; /* p-4 */
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+        .meal-card:hover {
+            background-color: #f0fdf4; /* emerald-50 for hover */
+        }
     </style>
 </head>
 <body class="bg-stone-50 text-stone-700 antialiased">
 
-    <div class="container mx-auto p-3 sm:p-4 lg:p-8">
-        <header class="mb-6 sm:mb-8 text-center">
-            <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-emerald-700">Piano Alimentare Interattivo</h1>
-            <p class="mt-2 text-sm sm:text-base lg:text-lg text-stone-600">Il tuo piano settimanale, con focus sul giorno corrente.</p>
+    <div class="main-container p-3 sm:p-4">
+        <header class="mb-6 text-center">
+            <h1 class="text-2xl sm:text-3xl font-bold text-emerald-700">Piano Alimentare</h1>
+            <p class="mt-1 text-sm sm:text-base text-stone-600">Il tuo piano giornaliero, settimana per settimana.</p>
         </header>
 
-        <nav class="mb-6 sm:mb-8 flex flex-wrap justify-center gap-2 sm:gap-3">
-            <button id="btnWeek1" class="week-button bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-3 sm:px-4 text-sm sm:text-base rounded-lg shadow transition duration-150 ease-in-out">Sett. 1</button>
-            <button id="btnWeek2" class="week-button bg-stone-400 hover:bg-emerald-700 text-white font-semibold py-2 px-3 sm:px-4 text-sm sm:text-base rounded-lg shadow transition duration-150 ease-in-out">Sett. 2</button>
-            <button id="btnWeek3" class="week-button bg-stone-400 hover:bg-emerald-700 text-white font-semibold py-2 px-3 sm:px-4 text-sm sm:text-base rounded-lg shadow transition duration-150 ease-in-out">Sett. 3</button>
-            <button id="btnWeek4" class="week-button bg-stone-400 hover:bg-emerald-700 text-white font-semibold py-2 px-3 sm:px-4 text-sm sm:text-base rounded-lg shadow transition duration-150 ease-in-out">Sett. 4</button>
-            <button id="btnGeneralInfo" class="bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2 px-3 sm:px-4 text-sm sm:text-base rounded-lg shadow transition duration-150 ease-in-out whitespace-nowrap">Info & Note</button>
+        <nav class="mb-4 flex flex-wrap justify-center items-center gap-2">
+            <button id="btnWeek1" class="week-button bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-3 text-xs sm:text-sm rounded-lg shadow transition">Sett. 1</button>
+            <button id="btnWeek2" class="week-button bg-stone-400 hover:bg-emerald-700 text-white font-semibold py-2 px-3 text-xs sm:text-sm rounded-lg shadow transition">Sett. 2</button>
+            <button id="btnWeek3" class="week-button bg-stone-400 hover:bg-emerald-700 text-white font-semibold py-2 px-3 text-xs sm:text-sm rounded-lg shadow transition">Sett. 3</button>
+            <button id="btnWeek4" class="week-button bg-stone-400 hover:bg-emerald-700 text-white font-semibold py-2 px-3 text-xs sm:text-sm rounded-lg shadow transition">Sett. 4</button>
+            <button id="btnGeneralInfo" class="bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2 px-3 text-xs sm:text-sm rounded-lg shadow transition whitespace-nowrap">Info & Note</button>
         </nav>
 
-        <div id="mealPlanContainer" class="bg-white p-3 sm:p-4 lg:p-6 rounded-xl shadow-lg">
-            <h2 id="weekTitle" class="text-xl sm:text-2xl font-semibold text-emerald-700 mb-3 sm:mb-4 text-center"></h2>
-            <div id="tableResponsiveContainer" class="table-responsive-container rounded-lg border border-stone-200">
-                <table id="mealTable" class="min-w-full w-full divide-y divide-stone-200">
-                    <thead >
-                        <tr>
-                            <th id="stickyPastoHeader" class="px-2 py-2.5 text-xs sm:px-3 sm:py-3.5 sm:text-sm font-semibold text-stone-900 sticky left-0 z-20 bg-stone-100">Pasto</th>
-                            <th data-day-col="0" class="px-2 py-2.5 text-xs sm:px-3 sm:py-3.5 sm:text-sm font-semibold text-stone-900 bg-stone-100">Lunedì</th>
-                            <th data-day-col="1" class="px-2 py-2.5 text-xs sm:px-3 sm:py-3.5 sm:text-sm font-semibold text-stone-900 bg-stone-100">Martedì</th>
-                            <th data-day-col="2" class="px-2 py-2.5 text-xs sm:px-3 sm:py-3.5 sm:text-sm font-semibold text-stone-900 bg-stone-100">Mercoledì</th>
-                            <th data-day-col="3" class="px-2 py-2.5 text-xs sm:px-3 sm:py-3.5 sm:text-sm font-semibold text-stone-900 bg-stone-100">Giovedì</th>
-                            <th data-day-col="4" class="px-2 py-2.5 text-xs sm:px-3 sm:py-3.5 sm:text-sm font-semibold text-stone-900 bg-stone-100">Venerdì</th>
-                            <th data-day-col="5" class="px-2 py-2.5 text-xs sm:px-3 sm:py-3.5 sm:text-sm font-semibold text-stone-900 bg-stone-100">Sabato</th>
-                            <th data-day-col="6" class="px-2 py-2.5 text-xs sm:px-3 sm:py-3.5 sm:text-sm font-semibold text-stone-900 bg-stone-100">Domenica</th>
-                        </tr>
-                    </thead>
-                    <tbody id="mealTableBody" class="divide-y divide-stone-200"></tbody>
-                </table>
-            </div>
+        <div id="dayNavigationContainer" class="mb-4 flex justify-between items-center">
+            <button id="btnPrevDay" class="bg-stone-200 hover:bg-stone-300 text-stone-700 font-semibold py-2 px-4 rounded-lg shadow text-sm transition disabled:opacity-50 disabled:cursor-not-allowed">&lt; Giorno Prec.</button>
+            <h2 id="currentDayTitle" class="text-xl sm:text-2xl font-semibold text-emerald-700 text-center mx-2"></h2>
+            <button id="btnNextDay" class="bg-stone-200 hover:bg-stone-300 text-stone-700 font-semibold py-2 px-4 rounded-lg shadow text-sm transition disabled:opacity-50 disabled:cursor-not-allowed">Giorno Succ. &gt;</button>
         </div>
+
+        <div id="dailyMealDisplayArea" class="space-y-4">
+            </div>
     </div>
 
     <div id="mealDetailModal" class="modal fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 invisible opacity-0 p-4">
@@ -233,10 +196,11 @@
         ];
 
         let currentWeek = 1;
+        let currentSelectedDayIndex; // 0 for Monday, 6 for Sunday
         let currentMealForAI = "";
-        const mealTableBody = document.getElementById('mealTableBody');
-        const weekTitle = document.getElementById('weekTitle');
-        const tableResponsiveContainer = document.getElementById('tableResponsiveContainer');
+
+        const dailyMealDisplayArea = document.getElementById('dailyMealDisplayArea');
+        const currentDayTitle = document.getElementById('currentDayTitle');
         const mealTypes = ['colazione', 'merenda', 'pranzo', 'cena'];
         const mealTypeItalian = { 'colazione': 'Colazione', 'merenda': 'Merenda', 'pranzo': 'Pranzo', 'cena': 'Cena' };
 
@@ -252,18 +216,19 @@
         const geminiResponseText = document.getElementById('geminiResponseText');
 
         const generalInfoModal = document.getElementById('generalInfoModal');
-        const generalInfoTitle = document.getElementById('generalInfoTitle');
+        const generalInfoTitleElement = document.getElementById('generalInfoTitle'); // Renamed to avoid conflict
         const generalInfoContent = document.getElementById('generalInfoContent');
         const abbreviationsList = document.getElementById('abbreviationsList');
         const closeGeneralInfoModal = document.getElementById('closeGeneralInfoModal');
         const btnGeneralInfo = document.getElementById('btnGeneralInfo');
+        const btnPrevDay = document.getElementById('btnPrevDay');
+        const btnNextDay = document.getElementById('btnNextDay');
 
-        function getCurrentDayTableIndex() {
+        function getInitialDayIndex() {
             const today = new Date();
             const dayOfWeek = today.getDay(); // 0 (Sunday) to 6 (Saturday)
-            // Our table columns data-day-col are 0 (Lunedì) to 6 (Domenica)
-            if (dayOfWeek === 0) return 6; // Sunday
-            return dayOfWeek - 1; // Monday (1) becomes 0, Tuesday (2) becomes 1, etc.
+            if (dayOfWeek === 0) return 6; // Sunday maps to index 6
+            return dayOfWeek - 1; // Monday (1) maps to 0, ..., Saturday (6) maps to 5
         }
         
         async function callGeminiAPI(prompt) {
@@ -311,84 +276,45 @@
             }
         });
 
-        function highlightCurrentDayColumn(currentDayIndex) {
-            const tableHeaders = document.querySelectorAll('#mealTable thead th[data-day-col]');
-            tableHeaders.forEach(th => {
-                th.classList.remove('current-day-header', 'font-bold');
-                th.style.backgroundColor = '#f3f4f6'; // Default bg-stone-100
-                if (parseInt(th.dataset.dayCol) === currentDayIndex) {
-                    th.classList.add('current-day-header', 'font-bold');
-                }
-            });
-        }
-        
-        function scrollToCurrentDayColumn(currentDayIndex) {
-            const stickyPastoHeader = document.getElementById('stickyPastoHeader');
-            const firstPastoCellWidth = stickyPastoHeader ? stickyPastoHeader.offsetWidth : 0;
-            
-            const dayHeaders = document.querySelectorAll('#mealTable thead th[data-day-col]');
-            let scrollPosition = 0;
-            if (dayHeaders[currentDayIndex]) {
-                 // We want the current day column to appear after the sticky "Pasto" column
-                 // So, we sum widths of all preceding day columns
-                for(let i = 0; i < currentDayIndex; i++) {
-                    if(dayHeaders[i]) {
-                        scrollPosition += dayHeaders[i].offsetWidth;
-                    }
-                }
-            }
-             // Small timeout to allow DOM to fully render, especially after week change
-            setTimeout(() => {
-                tableResponsiveContainer.scrollLeft = scrollPosition;
-            }, 50);
-        }
-
-        function renderWeek(weekNumber) {
+        function renderDay(weekNumber, dayIndex) {
             currentWeek = weekNumber;
+            currentSelectedDayIndex = dayIndex;
+
             const weekData = mealPlanData.find(w => w.weekNumber === weekNumber);
-            if (!weekData) return;
+            if (!weekData || !weekData.days[dayIndex]) return;
 
-            weekTitle.textContent = `Piano Alimentare - Settimana ${weekNumber}`;
-            mealTableBody.innerHTML = ''; 
-            
-            const currentDayIndex = getCurrentDayTableIndex();
-            highlightCurrentDayColumn(currentDayIndex);
+            const dayData = weekData.days[dayIndex];
+            currentDayTitle.textContent = `Sett. ${weekNumber} - ${dayData.dayName}`;
+            dailyMealDisplayArea.innerHTML = ''; 
 
-            mealTypes.forEach((mealType, mealIndex) => {
-                const row = document.createElement('tr');
+            mealTypes.forEach(mealType => {
+                const mealContent = dayData.meals[mealType] || 'Nessun pasto specificato.';
                 
-                const mealHeaderCell = document.createElement('td');
-                mealHeaderCell.classList.add('px-2', 'py-3', 'text-xs', 'sm:px-3', 'sm:py-4', 'sm:text-sm', 'font-medium', 'text-stone-800', 'sticky', 'left-0', 'z-10', 'whitespace-nowrap');
-                // Explicit background for sticky column to ensure it overrides general td styling from CSS if needed
-                // and to maintain zebra striping consistency.
-                if (mealIndex % 2 === 0) { 
-                    mealHeaderCell.style.backgroundColor = '#ffffff'; 
-                } else { 
-                    mealHeaderCell.style.backgroundColor = '#f9fafb'; 
-                }
-                mealHeaderCell.textContent = mealTypeItalian[mealType];
-                row.appendChild(mealHeaderCell);
+                const mealCard = document.createElement('div');
+                mealCard.classList.add('meal-card');
+                mealCard.dataset.mealType = mealTypeItalian[mealType];
+                mealCard.dataset.dayName = dayData.dayName;
+                mealCard.dataset.mealContent = mealContent;
+                mealCard.addEventListener('click', showMealDetail);
 
-                weekData.days.forEach((day, dayIdxInTable) => {
-                    const cell = document.createElement('td');
-                    cell.classList.add('px-2', 'py-3', 'text-xs', 'sm:px-3', 'sm:py-4', 'sm:text-sm', 'text-stone-600', 'cursor-pointer', 'transition-colors');
-                    if (dayIdxInTable === currentDayIndex) {
-                        cell.classList.add('current-day-cell');
-                    }
-                    cell.textContent = day.meals[mealType] || '-';
-                    cell.dataset.mealType = mealTypeItalian[mealType];
-                    cell.dataset.dayName = day.dayName;
-                    cell.dataset.mealContent = day.meals[mealType] || 'Nessun dettaglio per questo pasto.';
-                    cell.addEventListener('click', showMealDetail);
-                    row.appendChild(cell);
-                });
-                mealTableBody.appendChild(row);
+                const mealLabel = document.createElement('h3');
+                mealLabel.classList.add('text-md', 'font-semibold', 'text-emerald-600', 'mb-1');
+                mealLabel.textContent = mealTypeItalian[mealType];
+                mealCard.appendChild(mealLabel);
+
+                const mealText = document.createElement('p');
+                mealText.classList.add('text-sm', 'text-stone-600');
+                mealText.textContent = mealContent;
+                mealCard.appendChild(mealText);
+                
+                dailyMealDisplayArea.appendChild(mealCard);
             });
-            updateActiveButton();
-            scrollToCurrentDayColumn(currentDayIndex);
+
+            updateActiveWeekButton();
+            updateDayNavigationButtons();
         }
 
-        function updateActiveButton() {
+        function updateActiveWeekButton() {
             document.querySelectorAll('.week-button').forEach(button => {
                 button.classList.remove('bg-emerald-600');
                 button.classList.add('bg-stone-400');
@@ -400,8 +326,35 @@
             }
         }
 
+        function updateDayNavigationButtons() {
+            btnPrevDay.disabled = (currentSelectedDayIndex === 0);
+            const weekData = mealPlanData.find(w => w.weekNumber === currentWeek);
+            btnNextDay.disabled = (!weekData || currentSelectedDayIndex === weekData.days.length - 1);
+        }
+
+        btnPrevDay.addEventListener('click', () => {
+            if (currentSelectedDayIndex > 0) {
+                renderDay(currentWeek, currentSelectedDayIndex - 1);
+            }
+        });
+
+        btnNextDay.addEventListener('click', () => {
+            const weekData = mealPlanData.find(w => w.weekNumber === currentWeek);
+            if (weekData && currentSelectedDayIndex < weekData.days.length - 1) {
+                renderDay(currentWeek, currentSelectedDayIndex + 1);
+            }
+        });
+
+
         function showMealDetail(event) {
-            const { mealType, dayName, mealContent } = event.target.dataset;
+            // Traverse up if the click was on a child element of meal-card
+            let targetElement = event.target;
+            while (targetElement && !targetElement.classList.contains('meal-card')) {
+                targetElement = targetElement.parentElement;
+            }
+            if (!targetElement) return; // Should not happen if event listener is on meal-card
+
+            const { mealType, dayName, mealContent } = targetElement.dataset;
             currentMealForAI = mealContent; 
             mealDetailTitle.textContent = `${mealType} - ${dayName}`;
             mealDetailContentOriginal.textContent = mealContent;
@@ -431,7 +384,7 @@
         });
 
         function showGeneralInfo() {
-            generalInfoTitle.textContent = generalNotesData.title;
+            generalInfoTitleElement.textContent = generalNotesData.title;
             generalInfoContent.innerHTML = generalNotesData.points.map(point => `<p>${point}</p>`).join('');
             abbreviationsList.innerHTML = abbreviationsData.map(abbr => `<li><strong>${abbr.term}</strong>: ${abbr.definition}</li>`).join('');
             generalInfoModal.classList.remove('invisible', 'opacity-0');
@@ -457,12 +410,13 @@
             }
         });
 
-        document.getElementById('btnWeek1').addEventListener('click', () => renderWeek(1));
-        document.getElementById('btnWeek2').addEventListener('click', () => renderWeek(2));
-        document.getElementById('btnWeek3').addEventListener('click', () => renderWeek(3));
-        document.getElementById('btnWeek4').addEventListener('click', () => renderWeek(4));
+        document.getElementById('btnWeek1').addEventListener('click', () => renderDay(1, getInitialDayIndex()));
+        document.getElementById('btnWeek2').addEventListener('click', () => renderDay(2, getInitialDayIndex()));
+        document.getElementById('btnWeek3').addEventListener('click', () => renderDay(3, getInitialDayIndex()));
+        document.getElementById('btnWeek4').addEventListener('click', () => renderDay(4, getInitialDayIndex()));
 
-        renderWeek(1); // Initial render
+        // Initial render: Week 1, current day of the week
+        renderDay(1, getInitialDayIndex()); 
     </script>
 </body>
 </html>
